@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>{{ subject }} Quiz</h2>
+    <form method="POST" action="{{ url_for('submit_quiz', subject=subject) }}">
+        {% for question in questions %}
+            <fieldset>
+                <legend>{{ question[2] }}</legend>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[3] }}" required> {{ question[3] }}<br>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[4] }}"> {{ question[4] }}<br>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[5] }}"> {{ question[5] }}<br>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[6] }}"> {{ question[6] }}<br>
+            </fieldset>
+        {% endfor %}
+        <button type="submit">Submit Quiz</button>
+    </form>
+{% endblock %}

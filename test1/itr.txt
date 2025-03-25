@@ -1,0 +1,277 @@
+test/                                                                                               0000775 0001750 0001750 00000000000 14764001617 012245  5                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               test/app.py                                                                                         0000664 0001750 0001750 00000013327 14764000411 013374  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               # app.py
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'asd'  # Change this to a secure key
+
+# Database initialization
+def init_db():
+    conn = sqlite3.connect('quiz.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users 
+                 (id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT, role TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS questions 
+                 (id INTEGER PRIMARY KEY, subject TEXT, question TEXT, 
+                 option1 TEXT, option2 TEXT, option3 TEXT, option4 TEXT, 
+                 correct_answer TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS scores 
+                 (id INTEGER PRIMARY KEY, user_id INTEGER, subject TEXT, 
+                 score INTEGER, date TEXT)''')
+    
+    # Create default admin if not exists
+    try:
+        c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                 ('admin', 'admin123', 'admin'))
+    except sqlite3.IntegrityError:
+        pass
+    
+    conn.commit()
+    conn.close()
+
+# Routes
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        conn = sqlite3.connect('quiz.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE username = ? AND password = ?", 
+                 (username, password))
+        user = c.fetchone()
+        conn.close()
+        
+        if user:
+            session['user_id'] = user[0]
+            session['username'] = user[1]
+            session['role'] = user[3]
+            return redirect(url_for('dashboard'))
+        flash('Invalid credentials')
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        conn = sqlite3.connect('quiz.db')
+        c = conn.cursor()
+        try:
+            c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                     (username, password, 'user'))
+            conn.commit()
+            flash('Registration successful! Please login.')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            flash('Username already exists')
+        conn.close()
+    return render_template('register.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = sqlite3.connect('quiz.db')
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT subject FROM questions")
+    subjects = [row[0] for row in c.fetchall()]
+    conn.close()
+    
+    return render_template('dashboard.html', subjects=subjects)
+
+@app.route('/quiz/<subject>')
+def quiz(subject):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = sqlite3.connect('quiz.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM questions WHERE subject = ?", (subject,))
+    questions = c.fetchall()
+    conn.close()
+    
+    return render_template('quiz.html', questions=questions, subject=subject)
+
+@app.route('/submit_quiz/<subject>', methods=['POST'])
+def submit_quiz(subject):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    score = 0
+    conn = sqlite3.connect('quiz.db')
+    c = conn.cursor()
+    c.execute("SELECT id, correct_answer FROM questions WHERE subject = ?", (subject,))
+    questions = c.fetchall()
+    
+    for q_id, correct_answer in questions:
+        user_answer = request.form.get(str(q_id))
+        if user_answer == correct_answer:
+            score += 1
+    
+    c.execute("INSERT INTO scores (user_id, subject, score, date) VALUES (?, ?, ?, ?)",
+             (session['user_id'], subject, score, datetime.now().strftime('%Y-%m-%d')))
+    conn.commit()
+    conn.close()
+    
+    flash(f'Your score: {score}/{len(questions)}')
+    return redirect(url_for('dashboard'))
+
+@app.route('/admin/manage_questions', methods=['GET', 'POST'])
+def manage_questions():
+    if 'role' not in session or session['role'] != 'admin':
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        if 'add' in request.form:
+            conn = sqlite3.connect('quiz.db')
+            c = conn.cursor()
+            c.execute("""INSERT INTO questions 
+                        (subject, question, option1, option2, option3, option4, correct_answer) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                     (request.form['subject'], request.form['question'],
+                      request.form['option1'], request.form['option2'],
+                      request.form['option3'], request.form['option4'],
+                      request.form['correct_answer']))
+            conn.commit()
+            conn.close()
+            flash('Question added successfully')
+        
+        elif 'delete' in request.form:
+            conn = sqlite3.connect('quiz.db')
+            c = conn.cursor()
+            c.execute("DELETE FROM questions WHERE id = ?", (request.form['question_id'],))
+            conn.commit()
+            conn.close()
+            flash('Question deleted successfully')
+    
+    conn = sqlite3.connect('quiz.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM questions")
+    questions = c.fetchall()
+    conn.close()
+    
+    return render_template('manage_questions.html', questions=questions)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True)
+                                                                                                                                                                                                                                                                                                         test/templates/                                                                                     0000775 0001750 0001750 00000000000 14764000334 014236  5                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               test/templates/manage_questions.html                                                                0000664 0001750 0001750 00000002257 14764000167 020500  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               {% extends "base.html" %}
+{% block content %}
+    <h2>Manage Questions</h2>
+    
+    <h3>Add New Question</h3>
+    <form method="POST">
+        <p><input type="text" name="subject" placeholder="Subject" required></p>
+        <p><input type="text" name="question" placeholder="Question" required></p>
+        <p><input type="text" name="option1" placeholder="Option 1" required></p>
+        <p><input type="text" name="option2" placeholder="Option 2" required></p>
+        <p><input type="text" name="option3" placeholder="Option 3" required></p>
+        <p><input type="text" name="option4" placeholder="Option 4" required></p>
+        <p><input type="text" name="correct_answer" placeholder="Correct Answer" required></p>
+        <p><button type="submit" name="add">Add Question</button></p>
+    </form>
+    
+    <h3>Existing Questions</h3>
+    {% for question in questions %}
+        <div>
+            <p>{{ question[1] }}: {{ question[2] }}</p>
+            <form method="POST">
+                <input type="hidden" name="question_id" value="{{ question[0] }}">
+                <button type="submit" name="delete">Delete</button>
+            </form>
+        </div>
+    {% endfor %}
+{% endblock %}
+                                                                                                                                                                                                                                                                                                                                                 test/templates/register.html                                                                        0000664 0001750 0001750 00000000531 14764000247 016752  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               {% extends "base.html" %}
+{% block content %}
+    <h2>Register</h2>
+    <form method="POST">
+        <p><input type="text" name="username" placeholder="Username" required></p>
+        <p><input type="password" name="password" placeholder="Password" required></p>
+        <p><button type="submit">Register</button></p>
+    </form>
+{% endblock %}
+                                                                                                                                                                       test/templates/quiz.html                                                                            0000664 0001750 0001750 00000001514 14764000211 016107  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               {% extends "base.html" %}
+{% block content %}
+    <h2>{{ subject }} Quiz</h2>
+    <form method="POST" action="{{ url_for('submit_quiz', subject=subject) }}">
+        {% for question in questions %}
+            <fieldset>
+                <legend>{{ question[2] }}</legend>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[3] }}" required> {{ question[3] }}<br>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[4] }}"> {{ question[4] }}<br>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[5] }}"> {{ question[5] }}<br>
+                <input type="radio" name="{{ question[0] }}" value="{{ question[6] }}"> {{ question[6] }}<br>
+            </fieldset>
+        {% endfor %}
+        <button type="submit">Submit Quiz</button>
+    </form>
+{% endblock %}
+                                                                                                                                                                                    test/templates/login.html                                                                           0000664 0001750 0001750 00000000646 14764000274 016245  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               {% extends "base.html" %}
+{% block content %}
+    <h2>Login</h2>
+    <form method="POST">
+        <p><input type="text" name="username" placeholder="Username" required></p>
+        <p><input type="password" name="password" placeholder="Password" required></p>
+        <p><button type="submit">Login</button></p>
+    </form>
+    <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+{% endblock %}
+                                                                                          test/templates/dashboard.html                                                                       0000664 0001750 0001750 00000000626 14764000231 017053  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               {% extends "base.html" %}
+{% block content %}
+    <h2>Dashboard</h2>
+    {% if session['role'] == 'admin' %}
+        <p><a href="{{ url_for('manage_questions') }}">Manage Questions</a></p>
+    {% endif %}
+    <h3>Available Quizzes:</h3>
+    <ul>
+    {% for subject in subjects %}
+        <li><a href="{{ url_for('quiz', subject=subject) }}">{{ subject }}</a></li>
+    {% endfor %}
+    </ul>
+{% endblock %}
+                                                                                                          test/templates/index.html                                                                           0000664 0001750 0001750 00000000327 14764000310 016227  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               {% extends "base.html" %}
+{% block content %}
+    <h2>Welcome to the Quiz Website</h2>
+    <p><a href="{{ url_for('login') }}">Login</a> | 
+       <a href="{{ url_for('register') }}">Register</a></p>
+{% endblock %}
+                                                                                                                                                                                                                                                                                                         test/templates/base.html                                                                            0000664 0001750 0001750 00000001215 14764000334 016035  0                                                                                                    ustar   ritadmin                        ritadmin                                                                                                                                                                                                               <!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Website</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+    <header>
+        <h1>Quiz Website</h1>
+        {% if 'username' in session %}
+            <p>Welcome, {{ session['username'] }}! 
+            <a href="{{ url_for('logout') }}">Logout</a></p>
+        {% endif %}
+    </header>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</body>
+</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   

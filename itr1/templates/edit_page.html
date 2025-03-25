@@ -1,0 +1,22 @@
+{% extends "base2.html" %}
+{% block usr %}
+{% if session['role'] == 'admin' %}
+    <li style="background-color: rgba(255, 255, 255, 0.359); border-radius: 50px; width: auto; padding-left: 5px; padding-right: 5px; font-size: smaller;">QUIZ MASTER</li>
+{% endif %}
+<li>{{username}}</li>
+{% endblock %}
+
+
+{% block content %}
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+{% endfor %}
+{% for q in c %}
+    <div class="question">
+        <h3>{{ q }}</h3>
+        
+    </div>
+{% endfor %}
+{% endblock %}

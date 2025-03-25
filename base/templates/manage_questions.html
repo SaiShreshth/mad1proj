@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Manage Questions</h2>
+    
+    <h3>Add New Question</h3>
+    <form method="POST">
+        <p><input type="text" name="subject" placeholder="Subject" required></p>
+        <p><input type="text" name="question" placeholder="Question" required></p>
+        <p><input type="text" name="option1" placeholder="Option 1" required></p>
+        <p><input type="text" name="option2" placeholder="Option 2" required></p>
+        <p><input type="text" name="option3" placeholder="Option 3" required></p>
+        <p><input type="text" name="option4" placeholder="Option 4" required></p>
+        <p><input type="text" name="correct_answer" placeholder="Correct Answer" required></p>
+        <p><button type="submit" name="add">Add Question</button></p>
+    </form>
+    
+    <h3>Existing Questions</h3>
+    {% for question in questions %}
+        <div>
+            <p>{{ question[1] }}: {{ question[2] }}</p>
+            <form method="POST">
+                <input type="hidden" name="question_id" value="{{ question[0] }}">
+                <button type="submit" name="delete">Delete</button>
+            </form>
+        </div>
+    {% endfor %}
+{% endblock %}

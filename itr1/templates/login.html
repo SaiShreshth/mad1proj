@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="color: aliceblue;
+    border-radius: 15px; 
+    width: 30%;
+    height: 60vh; 
+    margin: 14vh 35vw;
+    background-color: rgba(10, 10, 10, 0.5);
+    text-align: center;">
+
+    <h2 style="padding: 10%;">Login</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="background: red; color: white; padding: 5px; border-radius: 5px; margin: 10px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    
+    <div style="padding: 0% 5vw;">
+        <form action="{{ url_for('login') }}" method="POST" style="padding: 5%;">
+            <input type="text" name="username" placeholder="Username" required
+                style="width:250px; padding:12px; margin:6px; border:none; border-radius:25px; 
+                font-size:16px; background:#222; color:white; text-align:center;">  
+
+            <input type="password" name="password" placeholder="Password" required
+                style="width:250px; padding:12px; margin:6px; border:none; border-radius:25px; 
+                font-size:16px; background:#222; color:white; text-align:center;">
+
+            <button type="submit"
+                style="width:250px; padding:12px; margin:6px; border:none; border-radius:25px; 
+                font-size:16px; background:#000000; color:white; cursor:pointer;" 
+                onmouseover="this.style.background='#5d5d5d'" 
+                onmouseout="this.style.background='#000000'">
+                Login
+            </button>  
+        </form>
+
+        <p style="padding: 10%;">Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+    </div>
+</div>
+{% endblock %}

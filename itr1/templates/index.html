@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="color: aliceblue;
+    border-radius: 15px; 
+    width: 30%;
+    height: 40vh; 
+    margin: 20vh 35vw;
+    background-color: rgba(10, 10, 10, 0.5);">
+    <h2 style="padding: 10%;">Welcome to the quiz website</h2>
+    <button style="width:250px; padding:12px; margin:6px; border:none; border-radius:25px; font-size:16px; background:#000000; color:white; cursor:pointer;" 
+        onmouseover="this.style.background='#5d5d5d'" onmouseout="this.style.background='#000000'"><a href="{{ url_for('login') }}" style="color: inherit; text-decoration: none;">Login</a></button>
+    <button style="width:250px; padding:12px; margin:6px; border:none; border-radius:25px; font-size:16px; background:#000000; color:white; cursor:pointer;" 
+        onmouseover="this.style.background='#5d5d5d'" onmouseout="this.style.background='#000000'"><a href="{{ url_for('register') }}" style="color: inherit; text-decoration: none;">Register</a></button>
+</div>
+{% endblock %}

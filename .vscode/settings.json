@@ -1,0 +1,32 @@
+{
+    "folder-color.pathColors": [
+        {
+            "folderPath": "iitmproj\\itr1\\templates\\dashboard.html\\",
+            "color": "foldercolorizer.color_00cc33"
+        },
+        {
+            "folderPath": "iitmproj\\itr1\\templates\\base.html\\",
+            "color": "foldercolorizer.color_00cc33"
+        },
+        {
+            "folderPath": "iitmproj\\itr1\\templates\\base2.html\\",
+            "color": "foldercolorizer.color_00cc33"
+        },
+        {
+            "folderPath": "iitmproj\\itr1\\templates\\index.html\\",
+            "color": "foldercolorizer.color_00cc33"
+        },
+        {
+            "folderPath": "iitmproj\\itr1\\templates\\login.html\\",
+            "color": "foldercolorizer.color_00cc33"
+        },
+        {
+            "folderPath": "iitmproj\\itr1\\templates\\register.html\\",
+            "color": "foldercolorizer.color_00cc33"
+        },
+        {
+            "folderPath": "iitmproj\\itr1\\app.py\\",
+            "color": "foldercolorizer.color_00cccc"
+        }
+    ]
+}

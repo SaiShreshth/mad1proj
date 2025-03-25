@@ -1,0 +1,41 @@
+{% extends "base2.html" %}
+{% block usr %}
+{% if session['role'] == 'admin' %}
+    <li style="background-color: rgba(255, 255, 255, 0.359); border-radius: 50px; width: auto; padding-left: 5px; padding-right: 5px; font-size: smaller;">QUIZ MASTER</li>
+{% endif %}
+<li>{{username}}</li>
+{% endblock %}
+
+
+{% block content %}
+<div style="background-color: rgba(255, 255, 255, 0.11); border-radius: 10px; margin: 20px; height: 100%;">
+    <h1 style="color: aliceblue; padding: 8px;">Dashboard</h1>
+</div>
+<div style="display: flex; justify-content: center; color: antiquewhite;">
+    
+    <a href="{{ url_for('edit_page') }}" style="text-decoration: none; color: inherit;">
+        <div style="background-color: rgba(255, 255, 255, 0.11); border-radius: 10px; padding:10px; margin: 20px; margin-left: 60px; margin-right: 60px; height: 100%;">
+            <img src="{{ url_for('static', filename='images/edit.png') }}" style="width: 100px; height: 100px; margin: 20px;">
+            <div>Edit</div>
+        </div>
+    </a>
+    <a href="{{ url_for('subsnchaps') }}" style="text-decoration: none; color: inherit;">
+        <div style="background-color: rgba(255, 255, 255, 0.11); border-radius: 10px; padding:10px; margin: 20px; margin-left: 60px; margin-right: 60px; height: 100%;">
+            <img src="{{ url_for('static', filename='images/subqui.png') }}" style="width: 100px; height: 100px; margin: 20px;">
+            <div>Subjects and Chapters</div>
+        </div>
+    </a>
+    <a href="{{ url_for('users') }}" style="text-decoration: none; color: inherit;">
+        <div style="background-color: rgba(255, 255, 255, 0.11); border-radius: 10px; padding:10px; margin: 20px; margin-left: 60px; margin-right: 60px; height: 100%;">
+            <img src="{{ url_for('static', filename='images/users.png') }}" style="width: 100px; height: 100px; margin: 20px;">
+            <div>Users</div>
+        </div>
+    </a>
+    <a href="{{ url_for('summary') }}" style="text-decoration: none; color: inherit;">
+        <div style="background-color: rgba(255, 255, 255, 0.11); border-radius: 10px; padding:10px; margin: 20px; margin-left: 60px; margin-right: 60px; height: 100%;">
+            <img src="{{ url_for('static', filename='images/summ.png') }}" style="width: 100px; height: 100px; margin: 20px;">
+            <div>Summary</div>
+        </div>
+    </a>
+</div>
+{% endblock %}
